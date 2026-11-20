@@ -134,6 +134,7 @@ export function WritePathSection({ fill = false }: { fill?: boolean }) {
           transition={{ duration: 0.52, ease: EASE, delay: 0.12 }}
         >
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: theme.accent }}>LIVE · WRITE PATH</p>
+          {seen ? (
           <iframe
             key={run}
             src="/animations/write-path.html?scene=write-path"
@@ -141,6 +142,9 @@ export function WritePathSection({ fill = false }: { fill?: boolean }) {
             loading="lazy"
             style={{ width: "100%", aspectRatio: "4 / 3", border: 0, display: "block" }}
           />
+          ) : (
+            <div style={{ width: "100%", aspectRatio: "4 / 3", background: theme.bg }} />
+          )}
           <div className="mt-2 flex flex-wrap gap-3 font-mono text-[11px] uppercase tracking-[0.12em]">
             {steps.map((step, index) => (
               <span key={step.id} style={{ color: active === index ? theme.accent : theme.muted }}>

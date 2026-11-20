@@ -10,6 +10,7 @@ import { Journey } from "@/components/ui/journey";
 import { Hero } from "@/components/ui/hero";
 import { Problem } from "@/components/ui/problem";
 import { SystemPanel } from "@/components/ui/system";
+import { WorldRuntime } from "@/components/world/runtime";
 import { sections } from "@/content/site";
 import { useLake } from "@/store/lake";
 
@@ -42,6 +43,8 @@ export default function WorldPage() {
   }, [mobile]);
 
   return (
+    <>
+      <WorldRuntime />
     <main>
       {sections.map((section) => (
         <section
@@ -60,5 +63,6 @@ export default function WorldPage() {
         </section>
       ))}
     </main>
+    </>
   );
 }

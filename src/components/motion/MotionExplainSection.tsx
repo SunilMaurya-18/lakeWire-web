@@ -203,7 +203,7 @@ export function MotionExplainSection({ config, fill = false, reverse = false }: 
           transition={{ duration: 0.52, ease: EASE, delay: 0.12 }}
         >
           <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.12em]" style={{ color: theme.accent }}>{config.badge}</p>
-          {config.embed ? (
+          {config.embed && seen ? (
             <iframe
               key={run}
               src={config.embed}
@@ -211,6 +211,8 @@ export function MotionExplainSection({ config, fill = false, reverse = false }: 
               loading="lazy"
               style={{ width: "100%", aspectRatio: "4 / 3", border: 0, display: "block" }}
             />
+          ) : config.embed ? (
+            <div style={{ width: "100%", aspectRatio: "4 / 3", background: theme.bg }} />
           ) : null}
           {config.embed ? null : (
           <div
