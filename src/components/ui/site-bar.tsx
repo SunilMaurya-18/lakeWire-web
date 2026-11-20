@@ -11,9 +11,10 @@ const links = [
 ];
 
 const pages = [
+  { href: "/architecture", label: "Architecture" },
   { href: "/research", label: "Research" },
   { href: "/docs", label: "Docs" },
-  { href: "https://github.com/SunilMaurya-18/lakewire", label: "GitHub" },
+  { href: "https://github.com/SunilMaurya-18/LakeWire", label: "GitHub" },
 ];
 
 export function SiteBar() {

@@ -12,7 +12,7 @@ export type ArchNode = {
 };
 
 export const statusLabel: Record<ArchStatus, string> = {
-  "planned-v0.1": "Planned v0.1",
+  "planned-v0.1": "Implemented in v0.1 (pre-alpha)",
   "planned-v0.2": "Planned v0.2",
   "planned-v0.3": "Planned v0.3",
   experimental: "Experimental",
@@ -35,8 +35,8 @@ export const nodes: ArchNode[] = [
     title: "Kafka clients",
     status: "planned-v0.1",
     kind: "clients",
-    summary: "Producers and consumers using the planned protocol subset.",
-    detail: "The v0.1 draft lists ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, and DeleteTopics. Consumer groups and transactions are not in that subset. No Kafka client is served by this repository.",
+    summary: "Producers and consumers using the v0.1 protocol subset.",
+    detail: "v0.1 APIs: ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, and DeleteTopics. Consumer groups, transactions, SASL/TLS, and fetch sessions are not in that subset. Consumers must use assign(), not subscribe(). Implementation: github.com/SunilMaurya-18/LakeWire.",
   },
   {
     id: "broker",
@@ -44,7 +44,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "broker",
     summary: "A Java 21 process that routes requests. It does not own the log.",
-    detail: "Buffer, uploader, commit, fetch, and workers are modules inside the broker, not extra infrastructure. The draft says any broker may write or read any partition. Leadership would be a routing hint, not exclusive ownership. The Netty server is not in this repository.",
+    detail: "Buffer, uploader, commit, fetch, and workers are modules inside the broker, not extra infrastructure. Any live broker may write or read any partition. Leadership is a routing hint, not exclusive ownership. Kafka listener is Netty on :9092 in the LakeWire repo.",
   },
   {
     id: "buffer",
@@ -52,7 +52,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "module",
     summary: "Memory inside the broker. Not a separate service, and not durable.",
-    detail: "The draft batches records here before one object upload. Unacknowledged bytes in this buffer are lost if the process stops. The proposed flush triggers are not configuration in this repository.",
+    detail: "The broker batches records here before one object upload. Unacknowledged bytes in this buffer are lost if the process stops. Flush triggers: linger 200 ms or object max 8 MiB.",
   },
   {
     id: "uploader",
@@ -60,7 +60,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "module",
     summary: "Builds one immutable LKW1 object and writes it to object storage.",
-    detail: "The upload follows an intent row in PostgreSQL. An uploaded object is not visible to readers until the commit succeeds. The LKW1 codec is not implemented here.",
+    detail: "The upload follows an intent row in PostgreSQL. Uploads use a conditional PUT (If-None-Match: * where the store supports it). An uploaded object is not visible to readers until the commit succeeds.",
   },
   {
     id: "commit",
@@ -84,7 +84,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "module",
     summary: "Retention, orphan cleanup, and reference checks, running with a broker.",
-    detail: "The draft runs these inside a broker process. Reference auditing reports mismatches. It does not delete objects on its own authority. None of these jobs are in this repository.",
+    detail: "These run inside a broker process. Reference auditing reports mismatches. It does not delete objects on its own authority. Workers GC orphans, apply retention, and audit I7/I8.",
   },
   {
     id: "postgres",
@@ -92,7 +92,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "external",
     summary: "External source of truth for offsets, watermarks, epochs, and leases.",
-    detail: "One of the two required infrastructure dependencies. Commit, fencing, and LISTEN/NOTIFY are specified here. The checked-in compose file can start Postgres. It does not contain the coordinator functions.",
+    detail: "One of the two required infrastructure dependencies. Commit, fencing, and LISTEN/NOTIFY live here. Compose starts Postgres with the cluster.",
   },
   {
     id: "storage",
@@ -100,7 +100,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.1",
     kind: "external",
     summary: "External durable store for immutable objects.",
-    detail: "Any S3 API, or a local directory in the planned dev mode. Objects are not the visibility boundary. A peer cache planned for v0.2 would only share ranges. It would not become another durable store.",
+    detail: "Any S3 API, or a local directory in lakewire dev. Objects are not the visibility boundary. Zone peer cache (gRPC) is v0.2 and only shares ranges. It is not another durable store.",
   },
   {
     id: "groups",
@@ -108,7 +108,7 @@ export const nodes: ArchNode[] = [
     status: "planned-v0.2",
     kind: "later",
     summary: "Membership, assignment, and committed consumer offsets.",
-    detail: "Kept off the core path. Not part of the v0.1 subset, and not implemented.",
+    detail: "Kept off the core path. Not part of the v0.1 subset. I6 and consumer groups are v0.2.",
   },
   {
     id: "peer",

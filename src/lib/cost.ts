@@ -1,12 +1,15 @@
 import { Vector3 } from "three";
 
-/** Public list prices. The monthly model and the part bars both read these. */
+/** Public list prices. PUT/GET are per 1,000 requests; per-GiB uses 8 MiB objects (128 per GiB). */
+const OBJECTS_PER_GIB = 1024 / 8;
+const PUT_PER_THOUSAND = 0.005;
+const GET_PER_THOUSAND = 0.0004;
+
 export const prices = {
-  diskPerGbMonth: 0.08,
   crossAzPerGb: 0.02,
   objectPerGbMonth: 0.023,
-  putPerGb: 0.005,
-  getPerGb: 0.0004,
+  putPerGb: (OBJECTS_PER_GIB * PUT_PER_THOUSAND) / 1000,
+  getPerGb: (OBJECTS_PER_GIB * GET_PER_THOUSAND) / 1000,
 };
 
 export const metrics = [
@@ -66,10 +69,10 @@ export function ingestGb(mbps: number) {
   return (mbps * 86400 * 30) / 1024;
 }
 
-export function classicParts(mbps: number, days: number, zones: number) {
+export function classicParts(mbps: number, _days: number, zones: number) {
   const copies = Math.max(1, zones);
   return {
-    disk: footprintGb(mbps, days) * copies * prices.diskPerGbMonth,
+    disk: 0,
     transfer: ingestGb(mbps) * Math.max(0, copies - 1) * prices.crossAzPerGb,
     object: 0,
     put: 0,

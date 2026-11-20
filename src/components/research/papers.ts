@@ -39,7 +39,7 @@ export const papers: Paper[] = [
     year: 2026,
     tags: ["Kafka", "Diskless"],
     why: "Accepted direction: batches go to object storage, metadata stays in a coordinator.",
-    href: "https://cwiki.apache.org/confluence/display/KAFKA/KIP-1150+Diskless+Topics",
+    href: "https://cwiki.apache.org/confluence/spaces/KAFKA/pages/345377898/KIP-1150+Diskless+Topics",
   },
   {
     id: "kip-405",

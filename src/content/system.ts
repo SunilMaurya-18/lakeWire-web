@@ -11,8 +11,8 @@ export const parts = [
   },
   {
     id: "agents",
-    name: "Agents",
-    line: "Towers route bytes only.",
+    name: "Stateless brokers",
+    line: "Brokers route bytes only.",
     detail: "Nothing is stored on them.",
     code: "agent.append(batch);",
     at: [-3.3, 0.7, 0] as [number, number, number],
@@ -22,9 +22,9 @@ export const parts = [
   {
     id: "batcher",
     name: "Batcher",
-    line: "A ring holds bytes for 50ms.",
+    line: "A ring holds bytes for 200 ms.",
     detail: "Then it seals one segment.",
-    code: "seal(batch, 50);",
+    code: "seal(batch, 200);",
     at: [-0.7, 0.35, 0] as [number, number, number],
     lake: true,
     classic: false,

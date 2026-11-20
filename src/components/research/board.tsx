@@ -30,6 +30,9 @@ export function Board() {
     <div>
       <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-brass">Research</p>
       <h1 className="mt-3 max-w-[16ch] text-[clamp(2.4rem,6vw,4.4rem)] font-semibold leading-[1.12] tracking-[-0.03em]">Why these papers.</h1>
+      <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-slate">
+        <a href="/architecture" className="text-brass">Architecture</a>
+      </p>
       <div className="mt-8 flex gap-2 overflow-x-auto pb-2" role="tablist" aria-label="Topics">
         {(["All", ...tags] as const).map((item) => (
           <button

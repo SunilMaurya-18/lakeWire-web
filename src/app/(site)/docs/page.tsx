@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { DocsManual } from "@/components/docs/manual";
 
 export const metadata: Metadata = {
-  title: "LakeWire — diskless Kafka on S3 and Postgres",
+  title: "Docs | LakeWire",
   description: "Write path, LKW1 objects, the Postgres coordinator, fetch, and the checks.",
 };
 

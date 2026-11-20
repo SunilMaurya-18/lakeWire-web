@@ -15,7 +15,7 @@ export const steps = [
     id: "put",
     label: "One object enters storage",
     lang: "Path",
-    code: "s3://{bucket}/{prefix}/v2/\n  {yyyy}/{mm}/{dd}/{hh}/\n  {broker}-{epoch}-{uuid}.lkw",
+    code: "s3://{bucket}/{prefix}/v2/\n  {yyyy}/{mm}/{dd}/{hh}/\n  {broker}-{epoch}-{uuidv7}.lkw",
   },
   {
     id: "commit",

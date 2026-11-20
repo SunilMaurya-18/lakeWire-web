@@ -105,7 +105,15 @@ export function CostPanel() {
         <a href="/#results" className="pointer-events-auto mt-3 inline-block font-mono text-[11px] uppercase tracking-[0.18em] text-slate">
           Model · public list prices
         </a>
-        <p className="mt-2 min-h-6 font-mono text-[13px] uppercase tracking-[0.14em] text-white">{hovered ? `${hovered.name} · ${formatMetric(costView.metric, hovered.value)}` : mobile ? "Tap a bar" : ""}</p>
+        <p className="mt-2 min-h-6 font-mono text-[13px] uppercase tracking-[0.14em] text-white">{
+          costView.metric === 0
+            ? "Classic storage depends on retention"
+            : hovered
+              ? `${hovered.name} · ${formatMetric(costView.metric, hovered.value)}`
+              : mobile
+                ? "Tap a bar"
+                : ""
+        }</p>
       </div>
       <div className="pointer-events-auto">
         <div className="mb-4 flex flex-wrap items-end gap-x-12 gap-y-3">

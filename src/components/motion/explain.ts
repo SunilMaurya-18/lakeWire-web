@@ -43,14 +43,14 @@ export const sections = {
     scrim: ["LIVE", "EXPIRED"],
     embed: "/animations/leases.html?scene=leases",
     embedTitle: "LakeWire leases animation",
-    caption: "2s heartbeat, 18s lease. Tunable. Timeline compressed.",
+    caption: "Design default: 2 s heartbeat, 10 s lease on Postgres now(). This animation is compressed.",
   },
   coordinator: {
     id: "coordinator",
     eyebrow: "Postgres",
     headline: "The offset, the lease, and the fence.",
     subhead: "One transaction checks the epoch, drops a duplicate sequence, then assigns offsets.",
-    caption: "A stale epoch cannot commit. This coordinator is specified, not in this repository.",
+    caption: "A stale epoch cannot commit.",
     chips: [
       { label: "epoch matches" },
       { label: "sequence seen" },

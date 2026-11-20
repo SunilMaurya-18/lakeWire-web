@@ -254,11 +254,17 @@ export function ArchitectureWalkthrough() {
         <div className={stack ? "order-first flex shrink-0 items-center justify-between gap-2 border-b border-[#252525] px-3 py-2" : "pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4"}>
           <div className={stack ? "min-w-0" : "pointer-events-auto max-w-xl"}>
             <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-[#EF4444]">Design simulation</p>
-            <p className={`text-[#A3A3A3] ${stack ? "mt-0.5 text-xs leading-snug" : "mt-1 hidden text-sm leading-relaxed md:block"}`}>Based on PRD v2.0. Implementation unverified.</p>
+            <p className={`text-[#A3A3A3] ${stack ? "mt-0.5 text-xs leading-snug" : "mt-1 hidden text-sm leading-relaxed md:block"}`}>Based on PRD v2.0. Core path implemented in v0.1 (pre-alpha).</p>
           </div>
           <div className={stack ? "flex shrink-0 gap-2" : "pointer-events-auto flex gap-2"}>
             <Link href="/" className={`inline-flex h-10 items-center border border-[#252525] px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-[#A3A3A3] ${focus}`}>
               Home
+            </Link>
+            <Link href="/docs" className={`inline-flex h-10 items-center border border-[#252525] px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-[#A3A3A3] ${focus}`}>
+              Docs
+            </Link>
+            <Link href="/research" className={`inline-flex h-10 items-center border border-[#252525] px-3 font-mono text-[11px] uppercase tracking-[0.12em] text-[#A3A3A3] ${focus}`}>
+              Research
             </Link>
             <button
               type="button"
@@ -375,11 +381,11 @@ export function ArchitectureWalkthrough() {
           ) : null}
           <details className="mt-3">
             <summary className={`cursor-pointer font-mono text-[10px] uppercase tracking-[0.12em] text-[#A3A3A3] ${focus}`}>Caveat</summary>
-            <p className="mt-2 text-sm leading-[1.7] text-[#A3A3A3]">Playback is paced for reading. It is not a measured latency, and this path is not implemented in this repository.</p>
+            <p className="mt-2 text-sm leading-[1.7] text-[#A3A3A3]">Playback is paced for reading. It is not a measured latency. PRD 12 targets: produce P50 ≤ 300 ms, P99 ≤ 800 ms, end-to-end P99 ≤ 1.5 s.</p>
           </details>
           <details className="mt-3">
             <summary className={`cursor-pointer font-mono text-[10px] uppercase tracking-[0.12em] text-[#A3A3A3] ${focus}`}>Source</summary>
-            <p className="mt-2 text-sm leading-[1.7] text-[#A3A3A3]">PRD v2.0 and the architecture walkthrough. The design is unverified in this repository.</p>
+            <p className="mt-2 text-sm leading-[1.7] text-[#A3A3A3]">PRD v2.0 and the architecture walkthrough. Implementation: <a className="underline" href="https://github.com/SunilMaurya-18/LakeWire">github.com/SunilMaurya-18/LakeWire</a>.</p>
           </details>
           {chapter !== "produce" && chapter !== "fetch" ? <p className="mt-4 text-sm leading-[1.7] text-[#A3A3A3]">{chapterCopy[chapter]}</p> : null}
           <div className="mt-6 flex flex-wrap gap-2">

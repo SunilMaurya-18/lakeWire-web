@@ -66,7 +66,7 @@ export function Nav() {
           >
             Docs
           </Link>
-          <a href="https://github.com/SunilMaurya-18/lakewire" className="hidden h-8 items-center px-2 text-[12px] font-medium text-white md:inline-flex">
+          <a href="https://github.com/SunilMaurya-18/LakeWire" className="hidden h-8 items-center px-2 text-[12px] font-medium text-white md:inline-flex">
             GitHub
           </a>
           <button type="button" className="grid h-11 w-11 place-items-center text-white md:hidden" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
@@ -102,7 +102,7 @@ export function Nav() {
               <Link href="/docs" onClick={() => setOpen(false)} className="inline-flex h-11 items-center rounded-full border border-line px-4 text-sm">
                 Docs
               </Link>
-              <a href="https://github.com/SunilMaurya-18/lakewire" className="inline-flex h-11 items-center rounded-full border border-line px-4 text-sm">
+              <a href="https://github.com/SunilMaurya-18/LakeWire" className="inline-flex h-11 items-center rounded-full border border-line px-4 text-sm">
                 GitHub
               </a>
             </motion.div>

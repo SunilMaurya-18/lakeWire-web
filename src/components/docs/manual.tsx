@@ -12,6 +12,23 @@ function jump(id: string) {
   else node.scrollIntoView({ block: "start" });
 }
 
+function RichText({ text }: { text: string }) {
+  const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
+  return (
+    <>
+      {parts.map((part, index) => {
+        const match = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        if (!match) return <span key={index}>{part}</span>;
+        return (
+          <a key={index} href={match[2]} className="underline decoration-[#252525] underline-offset-2 hover:text-[#F5F5F5]" target="_blank" rel="noreferrer">
+            {match[1]}
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
 function CodeBlock({ text }: { text: string }) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
@@ -77,7 +94,7 @@ function ManualBlock({ block, index }: { block: Block; index: number }) {
     return (
       <aside className={`mt-5 max-w-[54ch] border-l py-1 pl-4 ${warn ? "border-[#EF4444]" : "border-[#252525]"}`}>
         {warn ? <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-[#EF4444]">Warning</p> : null}
-        <p className="mt-1 text-[15px] leading-[1.65] text-[#A3A3A3]">{block.text}</p>
+        <p className="mt-1 text-[15px] leading-[1.65] text-[#A3A3A3]"><RichText text={block.text} /></p>
       </aside>
     );
   }
@@ -99,7 +116,7 @@ function ManualBlock({ block, index }: { block: Block; index: number }) {
               <tr key={row[0]}>
                 {row.map((cell, cellIndex) => (
                   <td key={`${row[0]}-${cellIndex}`} className="border-b border-[#252525] py-3 pr-4 align-top leading-relaxed text-[#A3A3A3]">
-                    {cell}
+                    <RichText text={cell} />
                   </td>
                 ))}
               </tr>
@@ -109,7 +126,7 @@ function ManualBlock({ block, index }: { block: Block; index: number }) {
       </div>
     );
   }
-  return <p className="mt-5 max-w-[54ch] text-base leading-[1.7] text-[#A3A3A3]">{block.text}</p>;
+  return <p className="mt-5 max-w-[54ch] text-base leading-[1.7] text-[#A3A3A3]"><RichText text={block.text} /></p>;
 }
 
 export function DocsManual() {
@@ -117,6 +134,16 @@ export function DocsManual() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const hits = useMemo(() => searchManual(query), [query]);
+
+  useEffect(() => {
+    const go = () => {
+      const id = window.location.hash.replace(/^#/, "");
+      if (id) window.requestAnimationFrame(() => jump(id));
+    };
+    go();
+    window.addEventListener("hashchange", go);
+    return () => window.removeEventListener("hashchange", go);
+  }, []);
 
   useEffect(() => {
     const nodes = [...document.querySelectorAll<HTMLElement>("[data-heading]")];

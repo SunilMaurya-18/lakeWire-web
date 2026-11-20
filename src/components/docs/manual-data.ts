@@ -11,103 +11,120 @@ export type ManualSection = {
   blocks: Block[];
 };
 
+const REPO = "https://github.com/SunilMaurya-18/LakeWire";
+const I1 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I1AckedReadableChecker.java`;
+const I2 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I2ContiguityChecker.java`;
+const I3 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I3SequenceOrderChecker.java`;
+const I4 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I4PhantomChecker.java`;
+const I5 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I5NoDuplicateChecker.java`;
+const I7 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I7NoDanglingRefChecker.java`;
+const I8 = `${REPO}/blob/main/verify/src/main/java/lakewire/verify/checker/I8NoLeakChecker.java`;
+const GUARANTEES = `${REPO}/blob/main/GUARANTEES.md`;
+const REPORT = `${REPO}/blob/main/docs/reports/correctness-v0.1.0.md`;
+const COMPAT = `${REPO}/blob/main/docs/reference/compatibility.md`;
+const QUICK = `${REPO}/blob/main/docs/tutorials/quickstart.md`;
+
 export const manual: ManualSection[] = [
   {
     id: "overview",
     title: "Overview",
     blocks: [
-      { type: "p", text: "LakeWire is a design for a diskless log that speaks a subset of the Kafka wire protocol. Stateless Java 21 brokers are meant to write record batches to S3-compatible object storage. PostgreSQL is the intended source of truth for offsets, the committed high watermark, producer state, and broker epochs. A high watermark is the next offset that readers are allowed to see. Brokers keep no partition data on disk." },
-      { type: "note", tone: "warn", text: "This repository has a Spring Boot shell (dev.lakewire.broker) and this site. The protocol server, LKW1 codec, and SQL coordinator below are specified in the v2.0 PRD. They are not in this tree. Verification of those behaviors is pending." },
+      { type: "p", text: "LakeWire is a diskless log that speaks a pinned Kafka protocol subset. Stateless Java 21 brokers write record batches to S3-compatible object storage. PostgreSQL is the source of truth for offsets, the committed high watermark, producer state, and broker epochs. A high watermark is the next offset that readers are allowed to see. Brokers keep no partition data on disk. Status: v0.1 pre-alpha, 0.1.0-SNAPSHOT. License: Apache-2.0." },
+      { type: "note", tone: "note", text: "This site is the docs UI. The implementation is github.com/SunilMaurya-18/LakeWire." },
       { type: "h2", id: "clients", text: "Clients" },
-      { type: "p", text: "The v0.1 target is a subset, not full Kafka compatibility. Planned calls on port 9092 are ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, and DeleteTopics. The acceptance target is the Apache Kafka Java client, the console tools, and kcat. Consumer groups, transactions, SASL, TLS, and fetch sessions are not in that subset." },
+      { type: "p", text: "v0.1 APIs on :9092: ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, DeleteTopics. Not in v0.1: consumer groups, transactions, SASL/TLS, fetch sessions. Consumers must use assign(), not subscribe(). Compatibility matrix: docs/reference/compatibility.md." },
+      { type: "p", text: `See [${COMPAT}](${COMPAT}) and [${QUICK}](${QUICK}).` },
       { type: "h2", id: "deps", text: "Two dependencies" },
-      { type: "p", text: "The design depends on PostgreSQL and any S3 API: AWS S3, GCS, SeaweedFS, MinIO, or a local directory in dev. The checked-in compose.yaml starts Postgres and Redis only. The PRD removes Redis as a requirement and keeps leases in Postgres. The README still describes Redis for cache and leases. That conflict is unresolved. No broker, MinIO, or Kafka listener is defined in compose.yaml. The pom includes Spring Actuator and Micrometer Prometheus. No LakeWire metric names, admin REST API, or gRPC admin service from the PRD exist in this tree." },
+      { type: "p", text: "PostgreSQL and any S3 API (AWS S3, GCS, SeaweedFS, MinIO, or a local directory in lakewire dev). Compose (deploy/compose/compose.yaml) starts 3 brokers (9092/9192/9292), Postgres, SeaweedFS, admin :8080, Prometheus, and Grafana. No Redis. Zone-aware Metadata is v0.1. Zone peer cache (gRPC) is v0.2." },
     ],
   },
   {
     id: "write",
     title: "Write path",
     blocks: [
-      { type: "p", text: "Problem: a classic produce waits on disk replicas across zones. Mechanism: the broker buffers batches, writes one immutable object, then commits metadata in Postgres before it acknowledges. Trade-off: the caller waits for linger, the PUT, and the commit. The PRD targets about a second, not sub-10 ms. Those latency figures are targets, not measurements." },
+      { type: "p", text: "Implemented in v0.1 (pre-alpha). Problem: a classic produce waits on disk replicas across zones. Mechanism: the broker buffers batches, writes one immutable object, then commits metadata in Postgres before it acknowledges. Trade-off: the caller waits for linger, the PUT, and the commit. PRD 12 targets (not measured): produce P50 ≤ 300 ms, P99 ≤ 800 ms, end-to-end P99 ≤ 1.5 s." },
       { type: "h2", id: "acks", text: "Acknowledgement" },
-      { type: "p", text: "Designed semantics: acks=1 and acks=all both mean the object is durable and the Postgres commit has returned. acks=0 is best-effort and may be lost. This is not implemented, so it has not been verified against a client." },
+      { type: "p", text: "acks=1 and acks=all both mean the object is durable and the Postgres commit has returned. acks=0 is best-effort and may be lost." },
       { type: "h2", id: "buffer", text: "Buffer" },
-      { type: "p", text: "Each broker is designed to buffer every partition it receives. The flush triggers are linger.ms, default 200, or object.max.bytes, default 8 MiB. One object may hold chunks from many partitions. These names are design defaults. application.properties in this repo only sets the Spring application name." },
+      { type: "p", text: "Each broker buffers every partition it receives. Flush triggers: linger.ms, default 200 ms, or object.max.bytes, default 8 MiB. One object may hold chunks from many partitions." },
       { type: "h2", id: "put", text: "Put" },
-      { type: "p", text: "The upload is an immutable object. An upload_intents row is recorded so a later commit cannot acknowledge an object that orphan cleanup already removed. The designed key is below. No writer in this repository creates it." },
-      { type: "code", text: "s3://{bucket}/{prefix}/v2/{yyyy}/{mm}/{dd}/{hh}/{broker}-{epoch}-{uuid}.lkw" },
+      { type: "p", text: "The upload is an immutable object. An upload_intents row is recorded so a later commit cannot acknowledge an object that orphan cleanup already removed. Uploads use a conditional PUT (If-None-Match: * where the store supports it). Object key:" },
+      { type: "code", text: "s3://{bucket}/{prefix}/v2/{yyyy}/{mm}/{dd}/{hh}/{broker}-{epoch}-{uuidv7}.lkw" },
       { type: "h2", id: "commit", text: "Commit" },
-      { type: "p", text: "The designed function sl_commit_object() runs in one transaction. It locks partition rows in topic and partition order, checks the broker epoch, drops a repeated idempotent sequence, assigns offsets, and publishes the high watermark. There is no SQL function in this repository. Group commit within 5 ms is a P0 flag in the PRD, not a measured setting." },
+      { type: "p", text: "sl_commit_object() runs in one transaction. It locks partition rows in topic and partition order, checks the broker epoch, drops a repeated idempotent sequence, assigns offsets, and publishes the high watermark." },
     ],
   },
   {
     id: "objects",
     title: "Objects",
     blocks: [
-      { type: "p", text: "The on-object format is LKW1. The body is Kafka RecordBatch v2, stored verbatim, with baseOffset 0. Real offsets are assigned at commit and patched when the batch is read. The Kafka batch CRC does not cover baseOffset, which is why the patch is specified as safe. The codec and that CRC behavior are not tested in this repository." },
+      { type: "p", text: "Implemented in v0.1 (pre-alpha). The on-object format is LKW1. The body is Kafka RecordBatch v2, stored verbatim, with baseOffset 0. Real offsets are assigned at commit and patched when the batch is read. The Kafka batch CRC does not cover baseOffset, which is why the patch is safe." },
       { type: "h2", id: "index", text: "Index" },
-      { type: "p", text: "The footer points at an index of topic, partition, byte range, record count, and crc32c. The design lets a worker read an object without asking Postgres. That reader is not in this tree." },
+      { type: "p", text: "The footer points at an index of topic, partition, byte range, record count, and crc32c. A worker can read an object without asking Postgres." },
       { type: "h2", id: "lifecycle", text: "Lifecycle" },
-      { type: "p", text: "Designed states are INTENT, COMMITTED, DELETE_PENDING, and GONE. An object moves to DELETE_PENDING only when live_refs hits 0, in the same transaction that drops the last segment. A grace period, default 5 minutes, lets an in-flight fetch finish. Orphan GC deletes an old intent before the object, so a late commit finds no intent and fails. None of this state machine is implemented here." },
+      { type: "p", text: "States: INTENT, COMMITTED, DELETE_PENDING, and GONE. An object moves to DELETE_PENDING only when live_refs hits 0, in the same transaction that drops the last segment. A grace period lets an in-flight fetch finish. Orphan GC deletes an old intent before the object, so a late commit finds no intent and fails." },
     ],
   },
   {
     id: "coordinator",
     title: "Coordinator",
     blocks: [
-      { type: "p", text: "Postgres is specified to hold topics, partitions, the high watermark (partitions.next_offset), the segment index, object refcounts, broker epochs, and idempotent producer state. A topic is a named log. A partition is one ordered slice of that log. An offset is the position of a record in that slice." },
+      { type: "p", text: "Implemented in v0.1 (pre-alpha). Postgres holds topics, partitions, the high watermark (partitions.next_offset), the segment index, object refcounts, broker epochs, and idempotent producer state. A topic is a named log. A partition is one ordered slice of that log. An offset is the position of a record in that slice." },
       { type: "h2", id: "epoch", text: "Epoch" },
-      { type: "p", text: "A broker registers with epoch = epoch + 1, heartbeats every 2 seconds, and holds a 10 second lease. The clock is Postgres now(), so broker clock skew does not decide the lease. A stale epoch cannot commit. That fences a broker that paused past its lease and then tries to finish an old upload. The homepage lease animation draws an 18 second lease on a compressed timeline; that drawing is tunable and is not the design default. This registry is not in the repository." },
+      { type: "p", text: "A broker registers with epoch = epoch + 1, heartbeats every 2 seconds, and holds a 10 second lease. The clock is Postgres now(), so broker clock skew does not decide the lease. A stale epoch cannot commit. That fences a broker that paused past its lease and then tries to finish an old upload." },
       { type: "h2", id: "idempotence", text: "Idempotence" },
-      { type: "p", text: "Producer id, epoch, and per-partition sequence are checked inside the commit transaction. A retry is designed to return the original offset. An out-of-order sequence is rejected. The PRD includes this because current Kafka clients enable idempotence by default. It is not implemented here." },
-      { type: "note", tone: "note", text: "Consumer groups and SASL/TLS are planned for later releases (v0.2 and v0.3 in the PRD). v0.1 consumers, if the protocol ships, would assign partitions and track offsets themselves. Coordinator sharding is an experiment for v1.0, not a current feature." },
+      { type: "p", text: "Idempotent produce (single-partition dedupe) is implemented in v0.1. Producer id, epoch, and per-partition sequence are checked inside the commit transaction. A retry returns the original offset. An out-of-order sequence is rejected. Transactions and exactly-once are not in v0.1." },
+      { type: "note", tone: "note", text: "Consumer groups and SASL/TLS are v0.2 and v0.3. v0.1 consumers use assign() and track offsets themselves. Coordinator sharding is an experiment for v1.0." },
     ],
   },
   {
     id: "read",
     title: "Read path",
     blocks: [
-      { type: "p", text: "Problem: a reader must not see a batch that was uploaded and then never committed. Mechanism: visible means committed. The high watermark is partitions.next_offset. Fetch looks up the segment index, then range-GETs the object and patches baseOffset. Trade-off: a fetch can wait for the commit instead of reading the newest uploaded bytes." },
+      { type: "p", text: "Implemented in v0.1 (pre-alpha). Problem: a reader must not see a batch that was uploaded and then never committed. Mechanism: visible means committed. The high watermark is partitions.next_offset. Fetch looks up the segment index, then range-GETs the object and patches baseOffset. Trade-off: a fetch can wait for the commit instead of reading the newest uploaded bytes." },
       { type: "h2", id: "fetch", text: "Fetch" },
-      { type: "p", text: "Uploaded-but-uncommitted data stays invisible because the broker does not serve an offset at or above the watermark it read from Postgres. NOTIFY is specified to fire only after the transaction commits, so a long-poll wakeup cannot announce an open commit. If a cached watermark is stale, the design re-reads Postgres before choosing to wait or to return an error. A stale cache can delay data. It must not invent it. This path is not implemented." },
+      { type: "p", text: "Uploaded-but-uncommitted data stays invisible because the broker does not serve an offset at or above the watermark it read from Postgres. NOTIFY fires only after the transaction commits, so a long-poll wakeup cannot announce an open commit. If a cached watermark is stale, the broker re-reads Postgres before choosing to wait or to return an error. A stale cache can delay data. It must not invent it." },
       { type: "h2", id: "routing", text: "Routing" },
-      { type: "p", text: "Metadata is designed to list a live broker in the client zone as the leader. Leadership is a routing hint, not ownership. Any broker can write or read any partition. Zone-aware routing itself is marked v0.2 in the PRD." },
+      { type: "p", text: "Metadata lists a live broker in the client zone as the leader. Leadership is a routing hint, not ownership. Any broker can write or read any partition. Zone-aware Metadata is v0.1. Zone peer cache (gRPC) is v0.2." },
     ],
   },
   {
     id: "guarantees",
     title: "Guarantees",
     blocks: [
-      { type: "p", text: "I1–I8 are the properties the design wants a fault harness to check. No checker, nemesis, or report is in this repository. Do not read them as proven guarantees. Cost figures on the homepage are a price model. Latency numbers in the PRD are targets." },
+      { type: "p", text: "Design invariants I1–I8. v0.1 checkers exist for I1–I5, I7 and I8. I6 (group offsets) is v0.2. Pre-alpha: evidence from the test harness, not a proof. Cost figures on the homepage are a price model. Latency numbers in PRD 12 are targets, not measured." },
       { type: "h2", id: "invariants", text: "Invariants" },
-      { type: "table", headers: ["ID", "Intended property", "Evidence here"], rows: [
-        ["I1", "An acknowledged record stays readable at that offset, with the same bytes.", "No checker"],
-        ["I2", "Offsets in a partition are unique and contiguous up to the high watermark.", "No checker"],
-        ["I3", "Per producer, per partition, order is preserved.", "No checker"],
-        ["I4", "A reader never observes an uncommitted or unacked offset that later disappears.", "No checker"],
-        ["I5", "An idempotent retry does not create a second copy.", "No checker"],
-        ["I6", "Group offsets are monotonic per generation. Specified for v0.2.", "Not in scope yet"],
-        ["I7", "No object referenced by a segment is deleted.", "No checker"],
-        ["I8", "An object without a row is younger than the orphan TTL plus the GC period.", "No checker"],
+      { type: "table", headers: ["ID", "Intended property", "Evidence"], rows: [
+        ["I1", "An acknowledged record stays readable at that offset, with the same bytes.", `[I1AckedReadableChecker](${I1}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I2", "Offsets in a partition are unique and contiguous up to the high watermark.", `[I2ContiguityChecker](${I2}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I3", "Per producer, per partition, order is preserved.", `[I3SequenceOrderChecker](${I3}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I4", "A reader never observes an uncommitted or unacked offset that later disappears.", `[I4PhantomChecker](${I4}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I5", "An idempotent retry does not create a second copy.", `[I5NoDuplicateChecker](${I5}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I6", "Group offsets are monotonic per generation.", "v0.2 (consumer groups)"],
+        ["I7", "No object referenced by a segment is deleted.", `[I7NoDanglingRefChecker](${I7}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
+        ["I8", "An object without a row is younger than the orphan TTL plus the GC period.", `[I8NoLeakChecker](${I8}) · [GUARANTEES.md](${GUARANTEES}) · [correctness-v0.1.0.md](${REPORT})`],
       ] },
       { type: "h2", id: "faults", text: "Faults" },
-      { type: "p", text: "The PRD plans kill, pause, partition, slow S3, and Postgres restart. A paused broker that outlives its lease must not commit when it wakes. That suite is not in this tree." },
+      { type: "p", text: "The harness uses kill, pause, partition, slow S3, and Postgres restart. A paused broker that outlives its lease must not commit when it wakes. Run: lakewire verify --nemesis kill,pause,partition-pg --duration 3m --seed 42." },
     ],
   },
   {
     id: "run",
     title: "Run",
     blocks: [
-      { type: "p", text: "First success, today, is inspecting the shell that is actually in the repository. A Kafka produce and consume loop is the v0.1 plan. It is not a copy-and-paste path yet." },
-      { type: "h2", id: "dev", text: "Local" },
-      { type: "p", text: "Prerequisite: Java 21, which is what the Maven pom requests. The wrapper is mvnw on Unix and mvnw.cmd on Windows. The only application entry is dev.lakewire.broker.LakewireBrokerApplication. compose.yaml can start Postgres and Redis. It does not start a broker or a bucket. The v2 PRD describes a Gradle multi-module layout and lakewire dev. This repository is one Maven module. Those do not match. The README still mentions gradlew bootRun." },
-      { type: "code", text: "mvnw.cmd -v" },
-      { type: "p", text: "spring-boot:run is the ordinary Maven goal for this pom. This documentation pass did not verify a successful boot. The shell does not open port 9092." },
-      { type: "h2", id: "produce", text: "Produce" },
-      { type: "note", tone: "warn", text: "Do not run these. They are the planned v0.1 interface from the PRD. There is no lakewire binary, no topics command, and no Kafka listener in this repository." },
-      { type: "code", text: "lakewire dev\nlakewire topics create orders -p 12 --retention 7d\nkcat -b localhost:9092 -t events -P\nkcat -b localhost:9092 -t events -C" },
+      { type: "p", text: "Implementation lives in the LakeWire repo. Auto-create is off. CLI: lakewire dev, topics create|list|describe|delete, cost, verify, inspect." },
+      { type: "h2", id: "dev", text: "Compose" },
+      { type: "p", text: "Needs Docker Desktop. Ports: brokers 9092 / 9192 / 9292, admin 8080, Prometheus 9090, Grafana 3000." },
+      { type: "code", text: "git clone https://github.com/SunilMaurya-18/LakeWire.git\ncd lakewire\ncopy deploy\\compose\\.env.example deploy\\compose\\.env\ndocker compose -f deploy\\compose\\compose.yaml --env-file deploy\\compose\\.env up -d" },
+      { type: "h2", id: "produce", text: "Topics and kcat" },
+      { type: "code", text: "bin/lakewire.cmd topics create orders -p 1 --retention 7d --bootstrap localhost:9092\necho hello | kcat -P -b localhost:9092 -t orders\nkcat -C -b localhost:9092 -t orders -e" },
+      { type: "h2", id: "solo", text: "lakewire dev" },
+      { type: "p", text: "One process, no Docker. Java 21. Prints ready bootstrap=localhost:9092." },
+      { type: "code", text: ".\\mvnw.cmd -pl lakewire-cli -am package -DskipTests\nbin\\lakewire.cmd dev" },
+      { type: "h2", id: "cost", text: "Cost and verify" },
+      { type: "code", text: "lakewire cost --gib-per-day 500 --zones 3 --retention 7d\nlakewire verify --nemesis kill,pause,partition-pg --duration 3m --seed 42" },
       { type: "h2", id: "trouble", text: "If it does not connect" },
-      { type: "p", text: "A connection refused on localhost:9092 is expected. Nothing in this tree listens there. If a Spring process exits immediately, check that Java 21 is the version on PATH and that compose has not been assumed to provide MinIO. Production install, Helm, and TLS are separate and are not part of this first look." },
+      { type: "p", text: "Confirm compose is up and a topic exists (auto-create is off). Helm and SASL/TLS are not in v0.1. Helm is on the v0.2 roadmap." },
     ],
   },
 ];

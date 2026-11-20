@@ -51,7 +51,7 @@ export const produceSteps: ProduceStep[] = [
     title: "Object upload",
     focus: ["uploader", "storage"],
     line: null,
-    body: "The uploader then writes that immutable object to object storage. The upload alone does not acknowledge the producer. Until the commit finishes, the object stays invisible to fetch.",
+    body: "The uploader then writes that immutable object to object storage with a conditional PUT (If-None-Match: * where the store supports it). The upload alone does not acknowledge the producer. Until the commit finishes, the object stays invisible to fetch.",
     path: [uploader, storage],
   },
   {
@@ -67,7 +67,7 @@ export const produceSteps: ProduceStep[] = [
     title: "Acknowledgement",
     focus: ["clients", "broker"],
     line: "produce",
-    body: "The broker acknowledges the producer only after that commit succeeds. For acks=1 and acks=all, the acknowledgement means the object is in storage and the PostgreSQL commit landed. Nothing in this repository runs this path.",
+    body: "The broker acknowledges the producer only after that commit succeeds. For acks=1 and acks=all, the acknowledgement means the object is in storage and the PostgreSQL commit landed.",
     path: [postgres, brokerFace, producer],
   },
 ];

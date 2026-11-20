@@ -104,7 +104,7 @@ export function WritePathSection({ fill = false }: { fill?: boolean }) {
           The ack waits for the object and the commit.
         </motion.h2>
         <motion.p {...enter(0.12)} className="mt-4 max-w-[42ch] text-[13px] leading-[1.6]" style={{ color: theme.muted }}>
-          One object in S3. Postgres assigns the offset after the PUT. acks=1 and acks=all wait for both. acks=0 is best-effort. This path is specified, not running in this tree.
+          One object in S3. Postgres assigns the offset after the PUT. acks=1 and acks=all wait for both. acks=0 is best-effort. Uploads use a conditional PUT (If-None-Match: *).
         </motion.p>
         <motion.div {...enter(0.18)} className="mt-6">
           <StepRail active={active} items={steps.map((step) => ({ label: `${step.id} ${step.title}`, value: step.detail }))} />

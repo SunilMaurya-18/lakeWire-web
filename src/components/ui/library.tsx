@@ -60,7 +60,7 @@ export function Library() {
           The cost model
         </Link>{" "}
         uses public list prices.{" "}
-        <a href="https://github.com/SunilMaurya-18/lakewire" className="pointer-events-auto text-white">
+        <a href="https://github.com/SunilMaurya-18/LakeWire" className="pointer-events-auto text-white">
           GitHub
         </a>{" "}
         holds the code.

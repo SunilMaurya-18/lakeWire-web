@@ -8,7 +8,11 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="LakeWire: streaming without disks">
 <meta property="og:description" content="LakeWire is a diskless, Kafka-compatible log. A segment is written once, to object storage. Postgres coordinates offsets, leases, and fencing.">
-<meta property="og:image" content="/images/LakeWire-WritePath-HeroStrip-Teal-HD.png">
+<link rel="canonical" href="https://lakewire.vercel.app/">
+<meta property="og:url" content="https://lakewire.vercel.app/">
+<meta property="og:image" content="https://lakewire.vercel.app/images/LakeWire-WritePath-HeroStrip-Teal-HD.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://lakewire.vercel.app/images/LakeWire-WritePath-HeroStrip-Teal-HD.png">
 <meta name="color-scheme" content="dark">
 <link rel="icon" href="/brand/lakewire-icon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
@@ -39,10 +43,10 @@
   <div class="shell">
     <a class="logo" href="/" aria-label="LakeWire home"><img src="/brand/lakewire-logo.svg" alt="LakeWire"></a>
     <nav class="nav" aria-label="Main">
-      <a href="#product">Product</a><a href="#desks">Path</a><a href="#results">Cost</a><a href="#faq">FAQ</a><a href="/research">Research</a>
+      <a href="#product">Product</a><a href="#desks">Path</a><a href="#results">Cost</a><a href="#faq">FAQ</a><a href="/docs">Docs</a><a href="/architecture">Architecture</a><a href="/research">Research</a>
     </nav>
     <div class="bar-right">
-      <a class="quiet" href="https://github.com/SunilMaurya-18/lakewire">GitHub</a>
+      <a class="quiet" href="https://github.com/SunilMaurya-18/LakeWire">GitHub</a>
       <button class="btn btn-ghost btn-sm theme" id="theme" type="button" aria-label="Switch theme">
         <svg class="i-moon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M13.5 9.6A5.6 5.6 0 0 1 6.4 2.5a5.6 5.6 0 1 0 7.1 7.1Z" stroke-linejoin="round"/></svg>
         <svg class="i-sun" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="8" cy="8" r="3"/><path d="M8 1.5v1.6M8 12.9v1.6M1.5 8h1.6M12.9 8h1.6M3.4 3.4l1.1 1.1M11.5 11.5l1.1 1.1M3.4 12.6l1.1-1.1M11.5 4.5l1.1-1.1" stroke-linecap="round"/></svg>
@@ -51,7 +55,7 @@
       <details class="menu">
         <summary class="btn btn-ghost btn-sm" aria-label="Menu"><span class="x" aria-hidden="true"></span><span>Menu</span></summary>
         <nav class="sheet" aria-label="Mobile">
-          <a href="#product" data-n="01">Product</a><a href="#desks" data-n="02">Path</a><a href="#results" data-n="03">Cost</a><a href="#faq" data-n="04">FAQ</a><a href="/research" data-n="05">Research</a><a href="https://github.com/SunilMaurya-18/lakewire" data-n="06">GitHub</a>
+          <a href="#product" data-n="01">Product</a><a href="#desks" data-n="02">Path</a><a href="#results" data-n="03">Cost</a><a href="#faq" data-n="04">FAQ</a><a href="/docs" data-n="05">Docs</a><a href="/architecture" data-n="06">Architecture</a><a href="/research" data-n="07">Research</a><a href="https://github.com/SunilMaurya-18/LakeWire" data-n="08">GitHub</a>
           <a class="btn btn-main" href="#start">Get started</a>
         </nav>
       </details>
@@ -164,7 +168,7 @@
           <li>Logs, CDC, and analytics</li>
           <li>Postgres and S3</li>
           <li>Produce and Fetch</li>
-          <li>About a second</li>
+          <li>P99 ≤ 1.5 s (target, not measured)</li>
         </ul>
       </div>
     </div>
@@ -200,7 +204,7 @@
         <div class="desk-main">
           <p class="mono">Step 1 of 3</p>
           <h3>Write path</h3>
-          <p>Buffer, then one immutable PUT, then a Postgres commit. The ack waits for both.</p>
+          <p>Buffer, then one immutable PUT, then a Postgres commit. The ack waits for both. Uploads use a conditional PUT (If-None-Match: *).</p>
           <div class="flow"><p class="mono">Steps</p><ol class="step-rail"><li class="step-rail-item"><span class="step-rail-mark" aria-hidden="true"></span><span class="step-rail-label">01</span><span class="step-rail-value">Produce</span></li><li class="step-rail-item"><span class="step-rail-mark" aria-hidden="true"></span><span class="step-rail-label">02</span><span class="step-rail-value">Buffer</span></li><li class="step-rail-item"><span class="step-rail-mark" aria-hidden="true"></span><span class="step-rail-label">03</span><span class="step-rail-value">Put</span></li><li class="step-rail-item"><span class="step-rail-mark" aria-hidden="true"></span><span class="step-rail-label">04</span><span class="step-rail-value">Commit</span></li></ol></div>
           <a class="go" href="/docs#write">Read the write path</a>
         </div>
@@ -260,11 +264,11 @@
             <tr><td class="task">Replication</td><td class="before" data-label="Classic"><small>3 zones</small>$0.040</td><td data-label="LakeWire"><small>S3 copies</small>$0</td><td class="res" data-label="Result">Not billed again</td></tr>
             <tr><td class="task">PUT and GET</td><td class="before" data-label="Classic"><small>Per GiB</small>—</td><td data-label="LakeWire"><small>8 MiB objects</small>$0.0008</td><td class="res" data-label="Result">Request cost</td></tr>
             <tr><td class="task">Transfer and requests</td><td class="before" data-label="Classic"><small>List price</small>$0.053</td><td data-label="LakeWire"><small>List price</small>$0.0008</td><td class="res" data-label="Result">Per GiB written</td></tr>
-            <tr><td class="task">Storage</td><td class="before" data-label="Classic"><small>Disk × 3</small>EBS</td><td data-label="LakeWire"><small>S3 Standard</small>$0.023</td><td class="res" data-label="Result">GB-month</td></tr>
-            <tr><td class="task">Produce latency</td><td class="before" data-label="Classic"><small>Disk path</small>Local</td><td data-label="LakeWire"><small>Target</small>P50 ≤300 ms</td><td class="res" data-label="Result">Not measured</td></tr>
+            <tr><td class="task">Storage</td><td class="before" data-label="Classic"><small>Disk × 3</small>EBS x 3 + headroom (depends on retention)</td><td data-label="LakeWire"><small>S3 Standard</small>$0.023</td><td class="res" data-label="Result">GB-month</td></tr>
+            <tr><td class="task">Produce latency</td><td class="before" data-label="Classic"><small>Disk path</small>Local</td><td data-label="LakeWire"><small>PRD 12</small>P50 ≤ 300 ms, P99 ≤ 800 ms, e2e P99 ≤ 1.5 s</td><td class="res" data-label="Result">target, not measured</td></tr>
           </tbody>
         </table>
-        <p class="assume">Per GiB written. Storage is $0.023/GB-month. <a href="/docs#guarantees">Assumptions</a>.</p>
+        <p class="assume">Per GiB written. Storage is $0.023/GB-month. Postgres is a fixed monthly cost at low volume; small objects raise PUT cost; consumer cross-AZ depends on setup. <code>lakewire cost --gib-per-day 500 --zones 3 --retention 7d</code>. <a href="/docs#guarantees">Assumptions</a>.</p>
       </div>
       <figure class="panel pad story">
         <div class="figure"><b>$0.053</b><span>Classic, per GiB.</span></div>
@@ -285,8 +289,10 @@
             <tr><td class="task">Offsets</td><td class="before" data-label="Classic Kafka">The brokers</td><td data-label="LakeWire">Postgres</td></tr>
             <tr><td class="task">Client</td><td class="before" data-label="Classic Kafka">Kafka</td><td data-label="LakeWire">Produce and Fetch</td></tr>
             <tr><td class="task">Scale-out</td><td class="before" data-label="Classic Kafka">Brokers copy data</td><td data-label="LakeWire">Brokers copy nothing</td></tr>
-            <tr><td class="task">Latency</td><td class="before" data-label="Classic Kafka">Milliseconds</td><td data-label="LakeWire">About a second</td></tr>
-            <tr><td class="task">Not in v0.1</td><td class="before" data-label="Classic Kafka">Exactly-once, compaction</td><td data-label="LakeWire">Same, plus sub-10 ms</td></tr>
+            <tr><td class="task">Latency</td><td class="before" data-label="Classic Kafka">Milliseconds</td><td data-label="LakeWire">P50 ≤ 300 ms, P99 ≤ 800 ms, e2e P99 ≤ 1.5 s (target, not measured)</td></tr>
+            <tr><td class="task">Transactions / exactly-once</td><td class="before" data-label="Classic Kafka">Yes</td><td data-label="LakeWire">v0.1 idempotent produce only</td></tr>
+            <tr><td class="task">Compaction</td><td class="before" data-label="Classic Kafka">Yes</td><td data-label="LakeWire">planned v0.3</td></tr>
+            <tr><td class="task">Sub-10 ms produce</td><td class="before" data-label="Classic Kafka">Disk path</td><td data-label="LakeWire">non-goal; target P50 ≤ 300 ms</td></tr>
           </tbody>
         </table>
       </div>
@@ -299,7 +305,7 @@
       <div class="head">
         <p class="mono">04 / Checks</p>
         <h2>Checks.</h2>
-        <p>Design invariants. The five below are examples. I1–I8, and the checkers, are in the manual. Nothing here has been proven in this repository.</p>
+        <p>Design invariants I1-I8. v0.1 checkers exist for I1-I5, I7 and I8 (GUARANTEES.md, lakewire verify). I6 (group offsets) is v0.2. Pre-alpha: evidence from the test harness, not a proof.</p>
       </div>
       <ul class="ticks">
         <li><a href="/docs#invariants">Acked bytes stay readable.</a></li>
@@ -316,12 +322,35 @@
       <div class="head">
         <p class="mono">05 / v0.1</p>
         <h2>What the first release includes.</h2>
-        <p>Produce, Fetch, and epoch fencing are the v0.1 target. These commands are planned. They are not in this repository.</p>
+        <p>v0.1 (pre-alpha, 0.1.0-SNAPSHOT). Kafka listener (Netty) on :9092. APIs: ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, DeleteTopics. Not in v0.1: consumer groups, transactions, SASL/TLS, fetch sessions. Consumers must use assign(), not subscribe(). Idempotent produce is in v0.1; transactions/EOS are not.</p>
       </div>
-      <pre class="snippet">lakewire dev
+      <pre class="snippet">git clone https://github.com/SunilMaurya-18/LakeWire.git
+cd lakewire
+copy deploy\compose\.env.example deploy\compose\.env
+docker compose -f deploy\compose\compose.yaml --env-file deploy\compose\.env up -d
 
-kcat -b localhost:9092 -t events -P
-kcat -b localhost:9092 -t events -C</pre>
+bin/lakewire.cmd topics create orders -p 1 --retention 7d --bootstrap localhost:9092
+echo hello | kcat -P -b localhost:9092 -t orders
+kcat -C -b localhost:9092 -t orders -e
+
+.\mvnw.cmd -pl lakewire-cli -am package -DskipTests
+bin\lakewire.cmd dev</pre>
+    </div>
+  </section>
+
+  <section class="shell block" id="roadmap">
+    <div class="panel section-frame">
+      <div class="head">
+        <p class="mono">Roadmap</p>
+        <h2>What comes after the core path.</h2>
+        <p>PRD 14. v0.1 is pre-alpha.</p>
+      </div>
+      <ul class="ticks">
+        <li>v0.1 core path (pre-alpha)</li>
+        <li>v0.2 consumer groups, peer cache, Helm</li>
+        <li>v0.3 Jepsen, compaction, SASL</li>
+        <li>v1.0 Iceberg, quotas, sharding experiment</li>
+      </ul>
     </div>
   </section>
 
@@ -335,7 +364,7 @@ kcat -b localhost:9092 -t events -C</pre>
       <div class="panel faq">
         <details open><summary>Where is the log?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>In an S3 bucket. Brokers keep no disks.</p></details>
         <details><summary>What assigns offsets?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>Postgres.</p></details>
-        <details><summary>Is the client Kafka?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>Produce and Fetch. No consumer groups in v0.1.</p></details>
+        <details><summary>Is the client Kafka?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>Yes, a pinned subset on :9092: ApiVersions, Metadata, Produce, Fetch, ListOffsets, InitProducerId, CreateTopics, DeleteTopics. No consumer groups in v0.1. Use assign(), not subscribe().</p></details>
         <details><summary>Can a stale writer append?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>No. A stale epoch cannot commit.</p></details>
         <details><summary>Where is the manual?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>Docs. Sources are under Research.</p></details>
         <details><summary>WarpStream, AutoMQ, tiered storage?<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m3 5 4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg></summary><p>Open source. Postgres coordinates. Brokers keep no disks.</p></details>
@@ -353,10 +382,10 @@ kcat -b localhost:9092 -t events -C</pre>
           <div class="signup">
             <p class="mono">Two dependencies</p>
             <div class="row">
-              <a class="btn btn-main" href="https://github.com/SunilMaurya-18/lakewire">GitHub</a>
+              <a class="btn btn-main" href="https://github.com/SunilMaurya-18/LakeWire">GitHub</a>
               <a class="btn btn-ghost" href="/docs#run">Start locally</a>
             </div>
-            <p class="note">Design: Postgres and a bucket. The Kafka listener is not in this tree yet.</p>
+            <p class="note">PostgreSQL and any S3 API. Kafka protocol on :9092. License: Apache-2.0.</p>
           </div>
         </div>
         <figure>
@@ -374,14 +403,14 @@ kcat -b localhost:9092 -t events -C</pre>
     <div class="foot-top">
       <div>
         <a class="logo" href="/" aria-label="LakeWire home"><img src="/brand/lakewire-logo.svg" alt="LakeWire"></a>
-        <p><b>Diskless log.</b></p>
+        <p><b>Two dependencies: PostgreSQL and any S3 API. Kafka protocol on :9092. License: Apache-2.0.</b></p>
       </div>
       <div><h4 class="mono">Platform</h4><ul><li><a href="/docs#write">Write path</a></li><li><a href="/docs#read">Fetch</a></li><li><a href="/docs#objects">Objects</a></li><li><a href="/docs#coordinator">Coordinator</a></li><li><a href="/docs#guarantees">Checks</a></li><li><a href="/docs">Manual</a></li></ul></div>
-      <div><h4 class="mono">Project</h4><ul><li><a href="https://github.com/SunilMaurya-18/lakewire">GitHub</a></li><li><a href="/docs">Docs</a></li><li><a href="/research">Research</a></li><li><a href="#results">Cost</a></li></ul></div>
+      <div><h4 class="mono">Project</h4><ul><li><a href="https://github.com/SunilMaurya-18/LakeWire">GitHub</a></li><li><a href="/docs">Docs</a></li><li><a href="/architecture">Architecture</a></li><li><a href="/research">Research</a></li><li><a href="#results">Cost</a></li></ul></div>
     </div>
     <div class="legal mono">
-      <span>Built by <b>Sunil Maurya</b> · &copy; 2026 LakeWire.</span>
-      <nav aria-label="Author"><a href="https://sunilmaurya-18.in">Portfolio</a><a href="https://github.com/SunilMaurya-18">GitHub</a><a href="https://www.linkedin.com/in/sunil-maurya77">LinkedIn</a></nav>
+      <span>Built by <b>Sunil Maurya</b> · &copy; 2026 LakeWire. <a href="https://github.com/SunilMaurya-18/LakeWire/blob/main/LICENSE">Apache-2.0</a>.</span>
+      <nav aria-label="Author"><a href="https://www.sunilmaurya-18.in/">Portfolio</a><a href="https://github.com/SunilMaurya-18">GitHub</a><a href="https://www.linkedin.com/in/sunil-maurya77">LinkedIn</a></nav>
     </div>
   </div>
 </footer>
